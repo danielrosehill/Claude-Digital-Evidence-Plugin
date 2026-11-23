@@ -11,6 +11,7 @@ Designed to **layer with** [`legal-investigative`](https://github.com/danielrose
 - `setup-storage-mounts` — configure rclone remotes for immutable destinations
 - `onboard` — first-run setup orchestrator
 - `capture-webpage` — archive a URL via SingleFile, then hash
+- `capture-from-device` — pull new captures off an Android phone over ADB, rename to true capture time, hash, upload to a named target, run its post steps
 - `hash-evidence` — SHA-256 / BLAKE3 hashing with manifest output
 - `timestamp-evidence` — OpenTimestamps Bitcoin anchoring
 - `inspect-metadata` — ExifTool + MediaInfo to merged JSON, with anomaly flags
@@ -24,6 +25,7 @@ Designed to **layer with** [`legal-investigative`](https://github.com/danielrose
 - `/digital-evidence:onboard`
 - `/digital-evidence:verify [path]`
 - `/digital-evidence:hash <path>`
+- `/digital-evidence:capture-device [target]`
 - `/digital-evidence:timestamp <path>`
 - `/digital-evidence:lookup <query>`
 

@@ -1,12 +1,21 @@
 {
   "name": "digital-evidence",
-  "version": "1.0.0",
-  "description": "General-purpose digital-evidence processing: capture, hash, OpenTimestamps, ExifTool/MediaInfo metadata, BagIt packaging, immutable sync. Layers with legal-investigative for full chain-of-custody workflows.",
+  "version": "1.1.0",
+  "description": "General-purpose digital-evidence processing: capture (web pages, Android devices over ADB), hash, OpenTimestamps, ExifTool/MediaInfo metadata, BagIt packaging, immutable sync. Layers with legal-investigative for full chain-of-custody workflows.",
   "author": {
     "name": "Daniel Rosehill",
     "url": "https://github.com/danielrosehill"
   },
   "repository": "https://github.com/danielrosehill/Claude-Digital-Evidence-Plugin",
   "license": "MIT",
-  "keywords": ["forensics", "evidence", "metadata", "chain-of-custody", "opentimestamps", "bagit", "exiftool"]
+  "keywords": [
+    "forensics",
+    "evidence",
+    "metadata",
+    "chain-of-custody",
+    "opentimestamps",
+    "bagit",
+    "exiftool",
+    "adb"
+  ]
 }
