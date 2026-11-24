@@ -30,6 +30,26 @@ at capture. Overlay apps (Timemark and similar) only burn a time into the pictur
 5. `clip.py delete RECEIPT --sheet-row N`: re-checks Drive, WORM and phone hashes, then removes that clip and its
    sidecars. Do not delete a ProofMode clip before its bundle is exported unless the user says so.
 
+## Standard case layout
+
+Every case has the same folders, in the WORM bucket and on Drive. Keep the original zip **and** its extracted contents:
+
+```
+<case>/
+  zips/                        original ProofMode zips, untouched (phone sync target)
+  video/YYYY-MM-DD/            photos/YYYY-MM-DD/    audio/YYYY-MM-DD/    calls/YYYY-MM-DD/
+  proofs/<zip name>/           proof files, pubkey.asc, certificate, HowToVerify from that zip
+```
+
+One zip can hold mixed media. Zip contents seen 2026-11-24: media at the top level; per item `<sha256>.proof.csv`,
+`.proof.json`, their `.asc`, `<sha256>.asc`, `<sha256>.ots`; plus `*batchproof.csv`, `pubkey.asc`, `cr.cert`,
+`HowToVerifyProofData.txt`. Extract into a new empty directory, sort by type, and match each media file's SHA-256
+to its proof set; report any item without one. No extractor script yet.
+
+New case: create `<case>/zips/` as an empty object in the bucket (so a phone sync app can pick it), add the case block to
+`cases.json`, then point the sync app at `<case>/zips` one-way, with folder objects disabled. Folder markers are locked too:
+check the name first. Turn on delete-after-upload only after a first zip is confirmed stored and locked.
+
 ## Batch: everything in the ProofMode folder
 
 `scripts/batch.py ingest CASE [--stage DIR]` pulls all finished videos and photos (and any `*proofmode*.zip` in Downloads or
@@ -37,7 +57,7 @@ Documents), compares each with the phone's own SHA-256, files them under `dirs` 
 
 ```json
 "proofmode": {"drive_folder_id": "<id>", "dirs": {"video": "ProofMode/Videos", "image": "ProofMode/Photos", "zip": "ProofMode/Zips"},
-              "worm": {"video": "<case>/video", "image": "<case>/photos", "zip": "<case>/proofmode-zips"}}
+              "worm": {"video": "<case>/video", "image": "<case>/photos", "zip": "<case>/zips"}}
 ```
 
 Make a contact sheet of the stills and look at it before ingest. `batch.py delete RECEIPT` re-hashes the stored copies, compares the
