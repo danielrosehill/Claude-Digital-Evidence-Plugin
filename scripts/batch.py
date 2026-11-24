@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Import every finished file in the phone's ProofMode folder (videos, photos) and, if found, proof zips.
 
-  batch.py ingest CASE [--stage DIR]     phone -> stage -> Drive (hash match) -> WORM; prints receipt
+  batch.py ingest CASE [--stage DIR] [--only NAME]...     phone -> stage -> Drive (hash match) -> WORM; prints receipt
   batch.py delete RECEIPT                re-checks Drive and WORM per file, then removes from the phone
 --stage reuses files already pulled; each is still compared with the phone's own SHA-256.
 Case needs a "proofmode" block in cases.json: drive_folder_id, dirs{video,image,zip}, worm{video,image,zip}.
@@ -31,6 +31,9 @@ def ingest(a):
     src = PH["folders"]["proofmode"]
     paths = adb(dev, f"find {shlex.quote(src)} -maxdepth 1 -type f ! -name '.*'").splitlines()
     paths += adb(dev, "find /sdcard/Download /sdcard/Documents -iname '*proofmode*.zip' -mmin -1440 2>/dev/null || true").splitlines()
+    if a.only:
+        paths = [x for x in paths if Path(x).name in a.only]
+        if len(paths) != len(a.only): sys.exit("--only: some names not on the phone")
     stage = Path(a.stage or tempfile.mkdtemp(prefix="proofmode-", dir="/var/tmp")); files = []
     for dp in filter(None, paths):
         p = stage / Path(dp).name; kind = KIND.get(p.suffix.lower())
@@ -93,6 +96,6 @@ def delete(a):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); s = ap.add_subparsers(dest="cmd", required=True)
-    p = s.add_parser("ingest"); p.add_argument("case", choices=CFG["cases"]); p.add_argument("--stage")
+    p = s.add_parser("ingest"); p.add_argument("case", choices=CFG["cases"]); p.add_argument("--stage"); p.add_argument("--only", action="append", help="file name; repeat")
     p = s.add_parser("delete"); p.add_argument("receipt")
     a = ap.parse_args(); {"ingest": ingest, "delete": delete}[a.cmd](a)
