@@ -44,7 +44,8 @@ Every case has the same folders, in the WORM bucket and on Drive. Keep the origi
 One zip can hold mixed media. Zip contents seen 2026-11-24: media at the top level; per item `<sha256>.proof.csv`,
 `.proof.json`, their `.asc`, `<sha256>.asc`, `<sha256>.ots`; plus `*batchproof.csv`, `pubkey.asc`, `cr.cert`,
 `HowToVerifyProofData.txt`. Extract into a new empty directory, sort by type, and match each media file's SHA-256
-to its proof set; report any item without one. No extractor script yet.
+to its proof set; report any item without one. `scripts/unzip_proof.py CASE ZIP` does this: checks hashes, proof sets and PGP signatures, then Drive and WORM. Pass `--name` as the
+exact stored zip name.
 
 New case: create `<case>/zips/` as an empty object in the bucket (so a phone sync app can pick it), add the case block to
 `cases.json`, then point the sync app at `<case>/zips` one-way, with folder objects disabled. Folder markers are locked too:
