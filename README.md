@@ -12,6 +12,7 @@ Designed to **layer with** [`legal-investigative`](https://github.com/danielrose
 - `onboard` — first-run setup orchestrator
 - `capture-webpage` — archive a URL via SingleFile, then hash
 - `capture-from-device` — pull new captures off an Android phone over ADB, rename to true capture time, hash, upload to a named target, run its post steps
+- `proofmode-clip` — collect a ProofMode (C2PA-signed) or other latest phone clip: hash, Drive, optional WORM, sheet row, verified phone deletion
 - `hash-evidence` — SHA-256 / BLAKE3 hashing with manifest output
 - `timestamp-evidence` — OpenTimestamps Bitcoin anchoring
 - `inspect-metadata` — ExifTool + MediaInfo to merged JSON, with anomaly flags
