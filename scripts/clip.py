@@ -207,12 +207,13 @@ def delete(a):
     sys.exit(not gone)
 
 
-ap = argparse.ArgumentParser(); s = ap.add_subparsers(dest="cmd", required=True)
-p = s.add_parser("latest"); p.add_argument("--folder", default="proofmode", choices=PH["folders"])
-p = s.add_parser("ingest"); p.add_argument("case", choices=CFG["cases"]); p.add_argument("--folder", default="proofmode", choices=PH["folders"]); p.add_argument("--path"); p.add_argument("--sidecar", action="append", default=[])
-p = s.add_parser("inspect"); p.add_argument("file")
-p = s.add_parser("delete"); p.add_argument("receipt"); p.add_argument("--sheet-row", type=int, required=True)
-a = ap.parse_args()
-if a.cmd == "inspect": print(json.dumps(inspect(a.file), indent=1))
-elif a.cmd == "latest": print(json.dumps(newest(device(), a.folder), indent=1))
-else: {"ingest": ingest, "delete": delete}[a.cmd](a)
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(); s = ap.add_subparsers(dest="cmd", required=True)
+    p = s.add_parser("latest"); p.add_argument("--folder", default="proofmode", choices=PH["folders"])
+    p = s.add_parser("ingest"); p.add_argument("case", choices=CFG["cases"]); p.add_argument("--folder", default="proofmode", choices=PH["folders"]); p.add_argument("--path"); p.add_argument("--sidecar", action="append", default=[])
+    p = s.add_parser("inspect"); p.add_argument("file")
+    p = s.add_parser("delete"); p.add_argument("receipt"); p.add_argument("--sheet-row", type=int, required=True)
+    a = ap.parse_args()
+    if a.cmd == "inspect": print(json.dumps(inspect(a.file), indent=1))
+    elif a.cmd == "latest": print(json.dumps(newest(device(), a.folder), indent=1))
+    else: {"ingest": ingest, "delete": delete}[a.cmd](a)

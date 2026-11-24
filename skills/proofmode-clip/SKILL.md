@@ -30,6 +30,34 @@ at capture. Overlay apps (Timemark and similar) only burn a time into the pictur
 5. `clip.py delete RECEIPT --sheet-row N`: re-checks Drive, WORM and phone hashes, then removes that clip and its
    sidecars. Do not delete a ProofMode clip before its bundle is exported unless the user says so.
 
+## Batch: everything in the ProofMode folder
+
+`scripts/batch.py ingest CASE [--stage DIR]` pulls all finished videos and photos (and any `*proofmode*.zip` in Downloads or
+Documents), compares each with the phone's own SHA-256, files them under `dirs` and locks them under `worm`:
+
+```json
+"proofmode": {"drive_folder_id": "<id>", "dirs": {"video": "ProofMode/Videos", "image": "ProofMode/Photos", "zip": "ProofMode/Zips"},
+              "worm": {"video": "<case>/video", "image": "<case>/photos", "zip": "<case>/proofmode-zips"}}
+```
+
+Make a contact sheet of the stills and look at it before ingest. `batch.py delete RECEIPT` re-hashes the stored copies, compares the
+phone files again, and only then removes them. **Deleting the media without an exported bundle may make it impossible to
+export the PGP/OpenTimestamps proof later**; the C2PA manifest inside each file survives. If `proof_zip` is false in the
+ingest output, tell the user and get a yes first.
+
+A phone app exposes no supported ADB or CLI export that we found (2026-11-24). On a computer, the Rust
+[`proofmode`](https://lib.rs/crates/proofmode) crate lists `check`, `generate` and `sign` commands (not tried here), and `gpg --verify` works
+on bundle signatures.
+
+To keep the app alive in the background (tested on Android 16):
+`dumpsys deviceidle whitelist +org.witness.proofmode`, `am set-standby-bucket org.witness.proofmode active`,
+`cmd appops set org.witness.proofmode RUN_ANY_IN_BACKGROUND allow`. Location must be on phone-wide for GPS in the proof.
+
+## Local audio
+
+`scripts/audio_files.py CASE DATE FILE...` uploads WAVs with their seal files (Drive, then WORM). Needs an `audio` block in the case:
+`{"drive_folder_id", "dir", "worm"}`. Use `--dry-run` first.
+
 ## Reading the proof
 
 `clip.py inspect FILE` reports whether a C2PA manifest and a timestamp-authority marker are *present*. It does
