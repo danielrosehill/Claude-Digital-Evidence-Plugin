@@ -30,6 +30,17 @@ at capture. Overlay apps (Timemark and similar) only burn a time into the pictur
 5. `clip.py delete RECEIPT --sheet-row N`: re-checks Drive, WORM and phone hashes, then removes that clip and its
    sidecars. Do not delete a ProofMode clip before its bundle is exported unless the user says so.
 
+## Pipeline for a ProofMode zip (the standard route)
+
+1. **Zip to WORM first:** into `<case>/zips/`. The user's sync app does it, or on request `<worm_script> put <case>/zips ZIP`.
+   Check it is complete (no multipart upload still open), locked, and opens.
+2. **Unzip into WORM:** download the locked zip **under its exact stored name** and run `scripts/unzip_proof.py CASE ZIP`. Videos go to
+   `video/`, photos to `photos/`, audio to `audio/`, proofs to `proofs/<zip name>/`. Anything already locked is skipped by hash.
+3. **Then copy to Google Drive:** same items and the zip. The script does this after WORM and checks each hash.
+4. **Log it** (sheet, case repo), then delete the phone originals that match the locked copies.
+
+A zip may hold one item or many: list its contents and say which phone files it does *not* cover.
+
 ## Standard case layout
 
 Every case has the same folders, in the WORM bucket and on Drive. Keep the original zip **and** its extracted contents:

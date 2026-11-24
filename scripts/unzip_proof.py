@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract a ProofMode zip, verify its proofs, file media + proofs on Drive and in WORM. The zip itself is not changed.
+"""Extract a ProofMode zip, verify its proofs, file media + proofs in WORM first, then copy to Drive. The zip itself is not changed.
   unzip_proof.py CASE ZIP [--name NAME]     NAME = original zip name if the local file was renamed
 Stops before uploading anything if a hash, proof set or PGP signature fails. PGP check = signed by the key inside the zip
 (shows integrity, not who owns the key). OpenTimestamps files are kept, not verified here.
@@ -34,12 +34,6 @@ for p in media:
 if not items: sys.exit("no media in zip")
 stem = re.sub(r"\.zip$", "", zname); rest = [p for p in sorted(out.iterdir()) if p not in media and p.stat().st_size]
 up = [(p, f"{pm.get('proofs_dir', 'ProofMode/Proofs')}/{stem}/{p.name}") for p in rest] + [(i["path"], i["rel"]) for i in items] + [(zp, f"{pm['dirs']['zip']}/{zname}")]
-for p, rel in up:
-    sh(["rclone", "copyto", "--immutable", str(p), f"{REMOTE}:{rel}", "--drive-root-folder-id", pm["drive_folder_id"]])
-    d = drive_entry(pm["drive_folder_id"], rel)
-    if d["Hashes"].get("sha256") != hashes(p)[0]: sys.exit(f"Drive mismatch {rel}")
-    for i in items:
-        if i["path"] == p: i["drive_url"] = f"https://drive.google.com/file/d/{d['ID']}/view"
 groups = {}
 for i in items: groups.setdefault(i["worm"], []).append(i["path"])
 groups[f"{pm['worm'].get('proofs', a.case + '/proofs')}/{stem}"] = rest
@@ -47,6 +41,12 @@ for pre, ps in groups.items() if WORM else []:
     r = sh([WORM, "put", pre, *map(str, ps)], timeout=3600)
     for p in ps:
         if not re.search(r"(OK|content:) " + re.escape(f"{pre}/{p.name}") + " ", r): sys.exit(f"WORM did not confirm {p.name}: {r[-300:]}")
+for p, rel in up:
+    sh(["rclone", "copyto", "--immutable", str(p), f"{REMOTE}:{rel}", "--drive-root-folder-id", pm["drive_folder_id"]])
+    d = drive_entry(pm["drive_folder_id"], rel)
+    if d["Hashes"].get("sha256") != hashes(p)[0]: sys.exit(f"Drive mismatch {rel}")
+    for i in items:
+        if i["path"] == p: i["drive_url"] = f"https://drive.google.com/file/d/{d['ID']}/view"
 for i in items: i.pop("path")
 rec = {"case": a.case, "zip": zname, "zip_sha256": hashes(zp)[0], "items": items, "proof_files": [p.name for p in rest], "extracted": str(out)}
 rf = RECEIPTS / f"zip_{stem[-60:]}.json"; rf.write_text(json.dumps(rec, indent=1)); print(json.dumps({"receipt": str(rf), **rec}, indent=1))
