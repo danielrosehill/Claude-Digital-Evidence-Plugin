@@ -100,10 +100,14 @@ def route_media(cfg, key, folder, ddir, wprefix, dry):
     have, want = drive_sha(cfg["rclone_remote"], folder, rel), s3.head_object(Bucket=B, Key=key)["Metadata"].get("sha256")
     if have and have == want:
         return {"drive": rel, "sha256": have, "already_on_drive": True}
-    if have:
+    if have and want:
         raise RuntimeError(f"Drive already has {rel} with other content ({have}); not overwritten")
     with tempfile.TemporaryDirectory(prefix="wr-", dir="/var/tmp") as d:
         p, sha = fetch(key, d)
+        if have:  # object without sha256 metadata (e.g. a sync-app upload): compare the downloaded bytes
+            if have != sha:
+                raise RuntimeError(f"Drive already has {rel} with other content ({have}); not overwritten")
+            return {"drive": rel, "sha256": sha, "already_on_drive": True}
         r = subprocess.run(["rclone", "copyto", "--immutable", str(p), f"{cfg['rclone_remote']}:{rel}",
                             "--drive-root-folder-id", folder], capture_output=True, text=True)
         if r.returncode:
