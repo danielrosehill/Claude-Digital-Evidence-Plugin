@@ -97,6 +97,11 @@ def route_media(cfg, key, folder, ddir, wprefix, dry):
     rel = f"{ddir.strip('/') + '/' if ddir.strip('./') else ''}{key[len(wprefix):]}"
     if dry:
         return {"drive": rel}
+    have, want = drive_sha(cfg["rclone_remote"], folder, rel), s3.head_object(Bucket=B, Key=key)["Metadata"].get("sha256")
+    if have and have == want:
+        return {"drive": rel, "sha256": have, "already_on_drive": True}
+    if have:
+        raise RuntimeError(f"Drive already has {rel} with other content ({have}); not overwritten")
     with tempfile.TemporaryDirectory(prefix="wr-", dir="/var/tmp") as d:
         p, sha = fetch(key, d)
         r = subprocess.run(["rclone", "copyto", "--immutable", str(p), f"{cfg['rclone_remote']}:{rel}",
