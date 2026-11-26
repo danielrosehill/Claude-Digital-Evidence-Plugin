@@ -41,6 +41,15 @@ at capture. Overlay apps (Timemark and similar) only burn a time into the pictur
 
 A zip may hold one item or many: list its contents and say which phone files it does *not* cover.
 
+**Unattended (steps 2 and 3):** `scripts/worm_router.py run` does them for every object that reached the bucket since its
+last pass: a new zip under `proofmode.worm.zip` goes through `unzip_proof.py`; a video, photo or audio file uploaded on its
+own (e.g. from a phone app that writes straight to WORM) is copied to the case's Drive folder at the same relative path
+(`<worm prefix>/2026-01-02/x.mp4` -> `<drive dir>/2026-01-02/x.mp4`), SHA-256-checked. Run `worm_router.py baseline` once
+before the first `run`, or everything already in the bucket is treated as new. `run --dry-run` prints the routing only.
+State and log: `<user data>/digital-evidence/router/{seen.json,log.jsonl}`. Needs `WORM_BUCKET`, `WORM_ENDPOINT`,
+`WORM_REGION` and AWS-style keys in the environment; set `worm_script` to `worm_router.py` (its `put` matches worm.py's)
+where the user's own WORM script is not available. Step 4 stays manual.
+
 ## Standard case layout
 
 Every case has the same folders, in the WORM bucket and on Drive. Keep the original zip **and** its extracted contents:
